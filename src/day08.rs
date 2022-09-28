@@ -9,15 +9,15 @@ type Position = Complex<Num>;
 
 type Pixels = HashSet<Position>;
 
-const TOPLEFT: Position = Position::new(0, 0);
+//const TOPLEFT: Position = Position::new(0, 0);
 const DOWN: Position = Position::new(0, 1);
 const RIGHT: Position = Position::new(1, 0);
 
 const SIZE: Position = Position::new(50, 6);
 
 fn contain(start: &Position, window: &Position) -> Position {
-    let a = (start.re + window.re) % window.re;
-    let b = (start.im + window.im) % window.im;
+    let a = start.re % window.re;
+    let b = start.im % window.im;
     Position::new(a, b)
 }
 
@@ -36,8 +36,8 @@ fn command(mut base: Pixels, c: &str, size: Position) -> Pixels {
         let to_get: Pixels = (0..50)
             .map(|n| RIGHT.scale(items[0]) + DOWN.scale(n))
             .collect();
-        let in_both = base.intersection(&to_get).map(|c| *c).collect();
-        base = base.difference(&in_both).map(|c| *c).collect();
+        let in_both = base.intersection(&to_get).copied().collect();
+        base = base.difference(&in_both).copied().collect();
         let shifted = in_both.iter().map(|c| c + DOWN.scale(items[1]));
         base.extend(shifted);
     } else if w[1] == "row" {
@@ -48,13 +48,13 @@ fn command(mut base: Pixels, c: &str, size: Position) -> Pixels {
         let to_get: Pixels = (0..50)
             .map(|n| DOWN.scale(items[0]) + RIGHT.scale(n))
             .collect();
-        let in_both = base.intersection(&to_get).map(|c| *c).collect();
-        base = base.difference(&in_both).map(|c| *c).collect();
+        let in_both = base.intersection(&to_get).copied().collect();
+        base = base.difference(&in_both).copied().collect();
         let shifted = in_both.iter().map(|c| c + RIGHT.scale(items[1]));
         base.extend(shifted);
     }
     base = base.iter().map(|c| contain(c, &size)).collect();
-    display(&base, &size);
+    // display(&base, &size);
     // For debugging
     base
 }
@@ -74,7 +74,7 @@ fn display(p: &Pixels, size: &Position) {
         println!("{:?}", &r);
     }
 
-    println!("");
+    println!();
 }
 
 pub fn part1(s: &str) -> usize {
@@ -83,10 +83,14 @@ pub fn part1(s: &str) -> usize {
     // for debugging
     s.lines()
         .fold(Pixels::new(), |acc, x| command(acc, x, size))
-        .iter()
-        .count()
+        .len()
 }
 
-pub fn part2(s: &str) -> String {
-    todo!();
+pub fn part2(s: &str) {
+    let size = SIZE;
+    let res = s
+        .lines()
+        .fold(Pixels::new(), |acc, x| command(acc, x, size));
+
+    display(&res, &size)
 }
