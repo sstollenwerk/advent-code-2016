@@ -14,7 +14,7 @@ fn to_filename(day: i32) -> String {
 }
 
 fn main() {
-    let data = read_day(00);
+    let data = read_day(05);
     println!("{:?}", part1(&data));
     println!("{:?}", part2(&data));
 }
