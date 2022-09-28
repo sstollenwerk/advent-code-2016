@@ -1,5 +1,7 @@
 use counter::Counter;
 
+use csr::Caesar;
+
 #[derive(Debug, Clone, Eq, PartialEq)]
 struct Room {
     name: Vec<String>,
@@ -40,6 +42,13 @@ fn matches_checksum(r: &Room) -> bool {
     to_checksum(r) == r.checksum
 }
 
+fn decrypt(r: &Room) -> String {
+    let base = r.name.join(" ");
+
+    let c = Caesar::new(r.id % 26);
+    c.encrypt(base)
+}
+
 fn parse(base: &str) -> Vec<Room> {
     base.lines().map(Room::from_raw).collect()
 }
@@ -54,7 +63,15 @@ pub fn part1(base: &str) -> u32 {
 }
 
 pub fn part2(base: &str) -> u32 {
-    //let data = parse(base);
+    let fake = Room::from_raw("qzmt-zixmtkozy-ivhz-343[abc]");
+    println!("{:?}", &decrypt(&fake));
 
-    todo!();
+    let desired = "northpole object storage".to_string();
+
+    let data = parse(base);
+    data.iter()
+        .filter(|r| matches_checksum(r))
+        .find(|r| decrypt(r) == desired)
+        .unwrap()
+        .id
 }
