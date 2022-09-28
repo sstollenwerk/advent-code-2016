@@ -19,7 +19,7 @@ const RIGHT: Position = Position::new(0, -1);
 const ORIGIN: Position = Position::new(0, 0);
 
 fn read_part(part: &str) -> Delta {
-    let d = match part.chars().nth(0).unwrap() {
+    let d = match part.chars().next().unwrap() {
         'L' => LEFT,
         'R' => RIGHT,
         _ => unreachable!(),
@@ -29,7 +29,7 @@ fn read_part(part: &str) -> Delta {
     (d, dist)
 }
 
-fn parse(base: &String) -> Vec<Delta> {
+fn parse(base: &str) -> Vec<Delta> {
     base.split(", ").map(read_part).collect()
 }
 
@@ -40,7 +40,7 @@ fn step(pos: PlaceInfo, move_: &Delta) -> PlaceInfo {
     (new_r, p + new_r.scale(*delta))
 }
 
-pub fn part1(base: &String) -> i32 {
+pub fn part1(base: &str) -> i32 {
     let data = parse(base);
 
     let start = (NORTH, ORIGIN);
@@ -49,10 +49,10 @@ pub fn part1(base: &String) -> i32 {
     final_position.1.l1_norm()
 }
 
-fn first_dupe(start: &PlaceInfo, moves: &Vec<Delta>) -> Position {
+fn first_dupe(start: &PlaceInfo, moves: &[Delta]) -> Position {
     let mut seen = HashSet::new();
 
-    let (mut d, mut p) = start.clone();
+    let (mut d, mut p) = *start;
     for (rot, delta) in moves.iter() {
         d *= rot;
         for _ in 0..*delta {
@@ -66,7 +66,7 @@ fn first_dupe(start: &PlaceInfo, moves: &Vec<Delta>) -> Position {
     unreachable!()
 }
 
-pub fn part2(base: &String) -> i32 {
+pub fn part2(base: &str) -> i32 {
     let data = parse(base);
 
     let start = (NORTH, ORIGIN);
