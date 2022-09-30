@@ -2,8 +2,7 @@ use num_complex::Complex;
 
 use pathfinding::directed::astar::astar;
 
-use pathfinding::directed::dijkstra::dijkstra;
-
+use pathfinding::directed::dijkstra::dijkstra_partial;
 type Num = i32;
 
 type Position = Complex<Num>;
@@ -11,7 +10,9 @@ type Position = Complex<Num>;
 type Edge = (Position, u32);
 
 const DESTINATION: Position = Position::new(31, 39);
+const START: Position = Position::new(1, 1);
 const FAVOURITE: Num = 1352;
+const TOCHECK: Num = 50;
 
 fn is_even(n: u32) -> bool {
     (n % 2) == 0
@@ -35,10 +36,10 @@ fn adj(p: &Position) -> Vec<Position> {
     vals.iter().map(|c| c + p).collect()
 }
 
-fn neighbours1(p: &Position) -> Vec<Edge> {
+fn neighbours(p: &Position) -> Vec<Edge> {
     adj(p)
         .into_iter()
-        .filter(|c| is_valid(c))
+        .filter(is_valid)
         .map(|c| (c, 1))
         .collect()
 }
@@ -51,21 +52,22 @@ fn success(p: &Position) -> bool {
     heuristic(p) == 0
 }
 
-fn parse(s: &str) -> Num {
-    s.parse().unwrap()
+fn stop(p: &Position) -> bool {
+    let start = START;
+    (start - p).l1_norm() > TOCHECK
 }
 
 pub fn part1(_s: &str) -> u32 {
-    //let r = parse(s);
     let start = Position::new(1, 1);
-    let dest = DESTINATION;
-    let neighbours = neighbours1;
     let heur = heuristic;
-    let (path, cost) = astar(&start, neighbours, heur, success).unwrap();
-    println!("{:?}", &path);
+    let (_, cost) = astar(&start, neighbours, heur, success).unwrap();
     cost
 }
 
-pub fn part2(s: &str) -> u32 {
-    todo!();
+pub fn part2(_s: &str) -> usize {
+    let start = Position::new(1, 1);
+
+    let (paths, _) = dijkstra_partial(&start, neighbours, stop);
+    let costs = paths.values().map(|p| p.1);
+    costs.filter(|c| c <= &(TOCHECK as u32)).count() + 1
 }
