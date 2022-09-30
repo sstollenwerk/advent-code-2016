@@ -42,8 +42,7 @@ impl FromStr for Instruction {
 }
 
 fn as_v(b: &str) -> V {
-    b.parse::<Num>()
-        .map_or_else(|_| V::C(first_char(b)), V::N)
+    b.parse::<Num>().map_or_else(|_| V::C(first_char(b)), V::N)
 }
 
 fn first_char(s: &str) -> char {
@@ -96,5 +95,9 @@ pub fn part1(s: &str) -> Num {
     *res.get(&'a').unwrap()
 }
 pub fn part2(s: &str) -> Num {
-    todo!();
+    let r = parse(s);
+    let res = run_code(Registers::from([('c', 1)]), &r);
+    println!("{:?}", &res);
+
+    *res.get(&'a').unwrap()
 }
