@@ -1,5 +1,6 @@
 use md5::{Digest, Md5};
 
+use cached::proc_macro::cached;
 use rayon::prelude::*;
 
 type Num = u32;
@@ -15,8 +16,8 @@ fn as_s(vals: &[u8]) -> Hashed {
         .map(|n| char::from_digit(n as u32, 16).unwrap())
         .collect()
 }
-
-fn find_hash(r_: &Hashed, steps: Num) -> Hashed {
+#[cached]
+fn find_hash(r_: Hashed, steps: Num) -> Hashed {
     let mut r = r_.to_vec();
     for _ in (0..steps) {
         r = base_hash(&r)
@@ -36,7 +37,7 @@ fn base_hash(s: &Hashed) -> Hashed {
 fn hasher(salt: &str, n: Num, steps: Num) -> Hashed {
     let s = salt.to_owned() + &(n.to_string());
     let r = s.chars().collect();
-    find_hash(&r, steps)
+    find_hash(r, steps)
 }
 
 fn all_eq<T: Eq>(xs: &[T]) -> bool {
