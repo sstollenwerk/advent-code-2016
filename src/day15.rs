@@ -43,5 +43,7 @@ pub fn part1(s: &str) -> Num {
 }
 
 pub fn part2(s: &str) -> Num {
-    todo!();
+    let mut vals = parse(s);
+    vals.push((11, 0));
+    optimal_time(&vals)
 }
