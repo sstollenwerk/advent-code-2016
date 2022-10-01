@@ -43,8 +43,15 @@ pub fn part1(s: &str) -> usize {
     rows.flatten().filter(|x| !x).count()
 }
 
-pub fn part2(s: &str) -> String {
+pub fn part2(s: &str) -> usize {
     let row = parse(s);
-    //   println!("{:?}",&row);
-    todo!();
+    let steps = 400000;
+    let mut state = row;
+    let rows = iter::repeat_with(|| {
+        let tmp = state.clone();
+        state = step(&state);
+        tmp
+    })
+    .take(steps);
+    rows.flatten().filter(|x| !x).count()
 }
