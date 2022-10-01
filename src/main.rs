@@ -1,8 +1,9 @@
 #![allow(unused_parens)]
 
 use std::fs;
-mod day15;
-use day15::{part1, part2};
+mod day16;
+mod helper;
+use day16::{part1, part2};
 
 fn read_day(day: i32) -> String {
     let filename = to_filename(day);
@@ -14,7 +15,7 @@ fn to_filename(day: i32) -> String {
 }
 
 fn main() {
-    let data = read_day(15);
+    let data = read_day(16);
     println!("{:?}", part1(&data));
     println!("{:?}", part2(&data));
 }
