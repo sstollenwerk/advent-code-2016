@@ -2,6 +2,8 @@ use std::str::FromStr;
 
 use crate::day21::Instruction::*;
 
+use itertools::Itertools;
+
 #[derive(Debug, Eq, PartialEq, Clone, Hash, Ord, PartialOrd, Copy)]
 enum Instruction {
     SwapPos(usize, usize),
@@ -124,6 +126,14 @@ pub fn part1(s: &str) -> String {
     command(input, &r).into_iter().collect()
 }
 pub fn part2(s: &str) -> String {
+    // brute force takes unnoticeable amount of time.
     let r = parse(s);
-    todo!();
+
+    let desired: Vec<char> = "fbgdceah".chars().collect();
+    let mut posses = desired.clone().into_iter().permutations(desired.len());
+    posses
+        .find(|i| command(i.to_vec(), &r) == desired)
+        .unwrap()
+        .into_iter()
+        .collect()
 }
