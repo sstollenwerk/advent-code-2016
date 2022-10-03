@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+//use std::collections::HashSet;
+// was planning on using hashset but astar with good heuristic is sufficient
 
 use itertools::iproduct;
 use num_complex::Complex;
@@ -14,7 +16,6 @@ struct Node {
     size: u32,
     used: u32,
     avail: u32,
-    use_per: u32,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
@@ -32,13 +33,12 @@ impl State {
 }
 
 impl Node {
-    fn new(place: Position, size: u32, used: u32, avail: u32, use_per: u32) -> Node {
+    fn new(place: Position, size: u32, used: u32, avail: u32) -> Node {
         Node {
             place,
             size,
             used,
             avail,
-            use_per,
         }
     }
 
@@ -53,7 +53,16 @@ impl Node {
 
         let p = Position::new(parts[1] as i32, parts[0] as i32);
 
-        Node::new(p, parts[2], parts[3], parts[4], parts[5])
+        Node::new(p, parts[2], parts[3], parts[4])
+    }
+
+    fn as_bool_fill(n: Node) -> Node {
+        if n.used < 200 {
+            let full = (n.used > 0) as u32;
+            Node::new(n.place, 1, full, 1 - full)
+        } else {
+            n
+        }
     }
 }
 
@@ -111,7 +120,7 @@ fn successors(s: &State) -> Vec<State> {
 
     let mut states: Vec<State> = Vec::new();
     for node_ in posses.iter() {
-        let node: Node = *&(*node_).clone();
+        let node: Node = *(*node_);
 
         let mut pos = positions.clone();
 
@@ -121,7 +130,7 @@ fn successors(s: &State) -> Vec<State> {
 
         let mut tmp = pos[&blank];
         tmp.used = amt;
-        tmp.avail = tmp.avail - amt;
+        tmp.avail -= amt;
 
         pos.insert(blank, tmp);
 
@@ -157,7 +166,9 @@ fn heuristic(s: &State) -> i32 {
     assert!(blanks.len() == 1);
     let blank: Position = blanks[0];
 
-    (blank - s.desired).l1_norm() + (GOAL - s.desired).l1_norm()
+    (blank - s.desired).l1_norm() + ((GOAL - s.desired).l1_norm() * 5)
+    // 4 to go from right to left + 1 to swap
+    // heuristic assumes no walls in the way.
 }
 
 pub fn part2(s: &str) -> i32 {
@@ -165,11 +176,6 @@ pub fn part2(s: &str) -> i32 {
 
     r.sort_by_key(|n| (n.place.re, n.place.im));
 
-    let capacity =  r.iter().map(|c| c.size).filter(|c| c < &200).min().unwrap();
-    let used =  r.iter().map(|c| c.used).filter(|c| c < &200).max().unwrap();
-
-    assert!(capacity >=  used);
-    // let positions:HashMap<Position, Node> =  r.into_iter().map(|x| (x.place, x)  ).collect()  ;
     let desired_ = r
         .iter()
         .map(|n| n.place)
@@ -178,8 +184,14 @@ pub fn part2(s: &str) -> i32 {
         .max();
     let desired = Position::new(0, desired_.unwrap());
 
-    let state = State::new(r, desired);
+    let capacity = r.iter().map(|c| c.size).filter(|c| c < &200).min().unwrap();
+    let used = r.iter().map(|c| c.used).filter(|c| c < &200).max().unwrap();
 
+    assert!(capacity >= used);
+
+    r = r.into_iter().map(Node::as_bool_fill).collect();
+
+    let state = State::new(r, desired);
 
     // let result = bfs(&state, successors, |p| p.desired == GOAL).unwrap();
     let result = astar(&state, successors_weighted, heuristic, |p| {
