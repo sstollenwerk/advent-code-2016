@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 use std::str::FromStr;
 
-use crate::day23::Instruction::{Cpy, Dec, Inc, Jnz, Tgl};
+use crate::day23::Instruction::{Add, Cpy, Dec, Inc, Jnz, Mul, Tgl};
+use crate::day23::V::{C, N};
 
 type Num = i32;
 type Register = char;
@@ -21,6 +22,8 @@ enum Instruction {
     Dec(V),
     Jnz(V, V),
     Tgl(V),
+    Add(V, V),
+    Mul(V, V),
 }
 
 impl FromStr for Instruction {
@@ -37,6 +40,8 @@ impl FromStr for Instruction {
             "dec" => Ok(Instruction::Dec(as_v(b))),
             "jnz" => Ok(Instruction::Jnz(as_v(b), as_v(c.unwrap()))),
             "tgl" => Ok(Instruction::Tgl(as_v(b))),
+            "add" => Ok(Instruction::Add(as_v(b), as_v(c.unwrap()))),
+            "mul" => Ok(Instruction::Mul(as_v(b), as_v(c.unwrap()))),
 
             _ => Err(()),
         }
@@ -77,6 +82,18 @@ fn run_code(mut registers: Registers, mut code: Vec<Instruction>) -> Registers {
                     registers.insert(*r, get_val(v, &registers));
                 };
             }
+
+            Add(v, r_) => {
+                if let V::C(r) = r_ {
+                    *registers.entry(*r).or_default() += get_val(v, &registers);
+                };
+            }
+            Mul(v, r_) => {
+                if let V::C(r) = r_ {
+                    *registers.entry(*r).or_default() *= get_val(v, &registers);
+                };
+            }
+
             Inc(r_) => {
                 if let V::C(r) = r_ {
                     *registers.entry(*r).or_default() += 1
@@ -110,6 +127,9 @@ fn toggle(i: &Instruction) -> Instruction {
         Cpy(a, b) => Jnz(*a, *b),
         Jnz(a, b) => Cpy(*a, *b),
 
+        Add(_, _) => unreachable!(),
+        Mul(_, _) => unreachable!(),
+
         Inc(a) => Dec(*a),
         Dec(a) => Inc(*a),
         Tgl(a) => Inc(*a),
@@ -124,7 +144,15 @@ pub fn part1(s: &str) -> Num {
     *res.get(&'a').unwrap()
 }
 pub fn part2(s: &str) -> Num {
-    let r = parse(s);
+    let mut r = parse(s);
+    //let replace = parse("mul d c\nadd c a\ncpy 0 d\ncpy 0 c");
+    let replace = [
+        Mul(C('d'), C('c')),
+        Add(C('c'), C('a')),
+        Cpy(N(0), C('d')),
+        Cpy(N(0), C('c')),
+    ];
+    r[5..(replace.len() + 5)].copy_from_slice(&replace[..]);
     let res = run_code(Registers::from([('a', 12)]), r);
     println!("{:?}", &res);
 
