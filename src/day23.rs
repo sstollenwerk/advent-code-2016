@@ -125,8 +125,7 @@ pub fn part1(s: &str) -> Num {
 }
 pub fn part2(s: &str) -> Num {
     let r = parse(s);
-    todo!();
-    let res = run_code(Registers::from([('c', 1)]), r);
+    let res = run_code(Registers::from([('a', 12)]), r);
     println!("{:?}", &res);
 
     *res.get(&'a').unwrap()
