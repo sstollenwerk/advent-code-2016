@@ -19,7 +19,6 @@ struct State {
 
 impl State {
     fn new(mut to_see: Interest, current: Position) -> State {
-        to_see.retain(|x| x != &current);
         to_see.sort_by_key(|k| (k.re, k.im));
         State { to_see, current }
     }
@@ -71,7 +70,13 @@ fn successors(floor: &Floor, s: &State) -> Vec<(State, Num)> {
     let res: Vec<_> = s
         .to_see
         .iter()
-        .map(|p| (State::new(s.to_see.clone(), *p), all_costs[p].1))
+        .filter(|x| x != &&s.current)
+        .map(|p| {
+            (
+                State::new(s.to_see.iter().filter(|x| x != &p).copied().collect(), *p),
+                all_costs[p].1,
+            )
+        })
         .collect();
 
     res
@@ -92,5 +97,18 @@ pub fn part1(s: &str) -> Num {
     res.unwrap().1
 }
 pub fn part2(s: &str) -> Num {
-    todo!()
+    let (floor, state) = parse(s);
+    let mut to_see = state.to_see;
+    to_see.push(state.current);
+    let state = State::new(to_see, state.current);
+
+    let succ = |s: &State| successors(&floor, &s.clone());
+
+    let initial = state.current;
+
+    let win = |s: &State| success(s) && s.current == initial;
+
+    let res = dijkstra(&state, succ, win);
+
+    res.unwrap().1
 }
